@@ -1,29 +1,7 @@
 CREATE DATABASE baseball;
+
 USE baseball;
-CREATE TABLE games(
-    id INT AUTO_INCREMENT,
-    game DATETIME,
-    homeTeam VARCHAR(255),
-    awayTeam VARCHAR(255),
-    homeScore INT,
-    awayScore INT,
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-  PRIMARY KEY(id)
-);
-CREATE TABLE teams (
-id INT AUTO_INCREMENT,
-teamLocation VARCHAR(255),
-teamMascot VARCHAR(255),
-teamAbbreviation VARCHAR(255),
-league VARCHAR(255),
-division VARCHAR(255),
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-PRIMARY KEY(id)
-);
+
 CREATE TABLE players (
 id INT AUTO_INCREMENT,
 firstName VARCHAR(255),
@@ -31,27 +9,44 @@ lastName VARCHAR(255),
 position VARCHAR(255),
 throws VARCHAR(255),
 hits VARCHAR(255),
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+currentTeamId INT,
+createdAt DATETIME DEFAULT NOW(),
+  updatedAt DATETIME DEFAULT NOW() ON UPDATE NOW(),
+  deletedAt DATETIME,
+PRIMARY KEY(id),
+FOREIGN KEY (currentTeamId) REFERENCES teams(id)
+);
+CREATE TABLE teams (
+id INT AUTO_INCREMENT,
+location VARCHAR(255),
+mascot VARCHAR(255),
+abbreviation VARCHAR(255),
+league VARCHAR(255),
+division VARCHAR(255),
+createdAt DATETIME DEFAULT NOW(),
+  updatedAt DATETIME DEFAULT NOW() ON UPDATE NOW(),
   deletedAt DATETIME,
 PRIMARY KEY(id)
 );
-CREATE TABLE pitchingStats (
-id INT AUTO_INCREMENT,
-wins ENUM('yes','no'),
-inningsPitched INT,
-hitsPitcher INT,
-runsPitcher INT,
-earnedRuns INT,
-walksPitcher INT,
-strikeOutsPitcher INT,
+
+CREATE TABLE games(
+    id INT AUTO_INCREMENT,
+    startTime DATETIME,
+    homeTeamId INT,
+    awayTeamId INT,
+    homeScore INT,
+    awayScore INT,
 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deletedAt DATETIME,
-PRIMARY KEY(id)
+  PRIMARY KEY(id),
+  FOREIGN KEY(homeTeamId) REFERENCES teams(id),
+  FOREIGN KEY(awayTeamId) REFERENCES teams(id)
 );
 CREATE TABLE hittingStats (
-id INT AUTO_INCREMENT,
+playerId INT,
+gameId INT,
+teamId INT,
 atBats INT,
 runs INT,
 hits INT,
@@ -65,46 +60,29 @@ steals INT,
 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deletedAt DATETIME,
-PRIMARY KEY(id)
+PRIMARY KEY(playerId, gameId, teamId),
+FOREIGN KEY (playerId) REFERENCES players(id),
+FOREIGN KEY (gameId) REFERENCES games(id),
+FOREIGN KEY (teamId) REFERENCES teams(id)
+);
+CREATE TABLE pitchingStats (
+playerId INT,
+gameId INT,
+teamId INT,
+wins TINYINT,
+inningsPitched DECIMAL(3,1),
+hits INT,
+runs INT,
+earnedRuns INT,
+walks INT,
+strikeOutsPitcher INT,
+createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deletedAt DATETIME,
+PRIMARY KEY(playerId, gameId, teamId),
+FOREIGN KEY (playerId) REFERENCES players(id),
+FOREIGN KEY (gameId) REFERENCES games(id),
+FOREIGN KEY (teamId) REFERENCES teams(id)
 );
 
-CREATE TABLE gameTeams(
-gamesId INT NOT NULL,
-teamsId INT NOT NULL,
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-PRIMARY KEY(gamesId, teamsId),
-FOREIGN KEY (gamesId) REFERENCES games(id),
-FOREIGN KEY (teamsId) REFERENCES teams(id)
-);
-CREATE TABLE teamPlayers(
-teamsId INT NOT NULL,
-playersId INT NOT NULL,
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-PRIMARY KEY(teamsId, playersId),
-FOREIGN KEY (teamsId) REFERENCES teams(id),
-FOREIGN KEY (playersId) REFERENCES players(id)
-);
-CREATE TABLE playerHitStats(
-playersId INT NOT NULL,
-hittingStatsId INT NOT NULL,
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-PRIMARY KEY(playersId, hittingStatsId),
-FOREIGN KEY (playersId) REFERENCES players(id),
-FOREIGN KEY (hittingStatsId) REFERENCES hittingStats(id)
-);
-CREATE TABLE playersPitchingStats(
-playersId INT NOT NULL,
-pitchingStatsId INT NOT NULL,
-createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  deletedAt DATETIME,
-PRIMARY KEY(playersId, pitchingStatsId),
-FOREIGN KEY (playersId) REFERENCES players(id),
-FOREIGN KEY (pitchingStatsId) REFERENCES pitchingStats(id)
-);
+
